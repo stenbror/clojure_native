@@ -84,7 +84,7 @@ impl LexicalAnalyzerMethods for LexicalAnalyzer {
                             },
                             _ => {
                                 self.parenthesis_mismatch = true;
-                                self.parenthesis_mismatch_message = Box::new("Closing ')' without opening ')'".to_string());
+                                self.parenthesis_mismatch_message = Box::new("Closing ')' without opening '('".to_string());
                                 None
                             }
                         }
