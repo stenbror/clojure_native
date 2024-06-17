@@ -13,6 +13,7 @@ pub enum Symbols {
     Minus(u32, u32),
     Mul(u32, u32),
     Divide(u32, u32),
+    Questionmark(u32, u32),
 
     Apply(u32, u32),
     Def(u32, u32),
@@ -28,6 +29,10 @@ pub enum Symbols {
     Require(u32, u32),
     Second(u32, u32),
     When(u32, u32),
+    Less(u32, u32),
+    Greater(u32, u32),
+    Equal(u32, u32),
+    NotEqual(u32, u32),
 
     LiteralName(u32, u32, Box<String>),
     LiteralKeyword(u32, u32, Box<String>)
@@ -39,7 +44,7 @@ pub trait LexicalAnalyzerMethods {
     fn advance(&mut self) -> ();
 
     fn is_operator_or_delimiter(&mut self) -> Option<Symbols>;
-    fn is_reserved_keywords(&self, text: &str, start: u32, end: u32) -> Option<Symbols>; 
+    fn is_reserved_keywords(&mut self, text: &str, start: u32, end: u32) -> Option<Symbols>; 
 
     fn get_symbol(&mut self) -> Result<Symbols, Box<String>>;
 }
@@ -185,11 +190,27 @@ impl LexicalAnalyzerMethods for LexicalAnalyzer {
                 self.advance();
                 Some(Symbols::Divide(start, self.index))
             },
+            '?' => {
+                self.advance();
+                Some(Symbols::Questionmark(start, self.index))
+            },
+            '<' => {
+                self.advance();
+                Some(Symbols::Less(start, self.index))
+            },
+            '>' => {
+                self.advance();
+                Some(Symbols::Greater(start, self.index))
+            },
+            '=' => {
+                self.advance();
+                Some(Symbols::Equal(start, self.index))
+            },
             _ => None
         }
     }
 
-    fn is_reserved_keywords(&self, text: &str, start: u32, end: u32) -> Option<Symbols> {
+    fn is_reserved_keywords(&mut self, text: &str, start: u32, end: u32) -> Option<Symbols> {
         match text {
             "apply" => Some(Symbols::Apply(start, end)),
             "def" => Some(Symbols::Def(start, end)),
@@ -202,6 +223,15 @@ impl LexicalAnalyzerMethods for LexicalAnalyzer {
             "let" => Some(Symbols::Let(start, end)),
             "map" => Some(Symbols::Map(start, end)),
             "name" => Some(Symbols::Name(start, end)),
+            "not" => {
+                match self.get_char() {
+                    '=' => {
+                        self.advance();
+                        Some(Symbols::NotEqual(start, self.index))
+                    },
+                    _ => Some(Symbols::LiteralName(start, end, Box::new(text.to_owned())))
+                }
+            }
             "require" => Some(Symbols::Require(start, end)),
             "second" => Some(Symbols::Second(start, end)),
             "when" => Some(Symbols::When(start, end)),
@@ -586,6 +616,70 @@ mod tests {
         }
     }
 
+    #[test]
+    fn operator_or_delimiter_questionmark() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("  ?"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Questionmark(2, 3) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_less() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("  <"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Less(2, 3) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_greater() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("  >"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Greater(2, 3) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_equal() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("  ="));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Equal(2, 3) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
 
     // Tests reserved keywords ////////////////////////////////////////////////
 
@@ -807,6 +901,43 @@ mod tests {
             Ok(x) => {
                 match x {
                     Symbols::When(0, 4) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn keyword_not_equal() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("not="));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::NotEqual(0, 4) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn keyword_not_equal_missing_equal() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("not"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::LiteralName(0, 3, text ) => {
+                        match text.as_str() {
+                            "not" => assert!(true),
+                            _ => assert!(false)
+                        }
+                    },
                     _ => assert!(false)
                 }
             },
