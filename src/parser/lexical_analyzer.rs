@@ -11,6 +11,9 @@ pub enum Symbols {
 
     Def(u32, u32),
     Defn(u32, u32),
+    Doc(u32, u32),
+    Let(u32, u32),
+    Require(u32, u32),
 
     LiteralName(u32, u32, Box<String>),
     LiteralKeyword(u32, u32, Box<String>)
@@ -156,6 +159,9 @@ impl LexicalAnalyzerMethods for LexicalAnalyzer {
         match text {
             "def" => Some(Symbols::Def(start, end)),
             "defn" => Some(Symbols::Defn(start, end)),
+            "doc" => Some(Symbols::Doc(start, end)),
+            "let" => Some(Symbols::Let(start, end)),
+            "require" => Some(Symbols::Require(start, end)),
             _ => {
                 match (&text.starts_with(':'), text.len() == (1 as usize)) {
                     (true, true) => None,
@@ -477,6 +483,54 @@ mod tests {
             Ok(x) => {
                 match x {
                     Symbols::Defn(0, 4) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn keyword_doc() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("doc"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Doc(0, 3) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn keyword_let() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("let"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Let(0, 3) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn keyword_require() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("require"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Require(0, 7) => assert!(true),
                     _ => assert!(false)
                 }
             },
