@@ -5,10 +5,12 @@ use super::lexical_analyzer::{ LexicalAnalyzer, LexicalAnalyzerMethods, Symbols 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Node {
     Unit(Vec<Node>),
-    List(u32, u32, Symbols, Vec<Node>, Symbols),
-    Vec(u32, u32, Symbols, Vec<Node>, Symbols),
-    Map(u32, u32, Symbols, Vec<Node>, Vec::<Node>, Symbols),
-    Set(u32, u32, Symbols, Vec<Node>, Symbols)
+    List(Symbols, Vec<Node>, Symbols),
+    Vec(Symbols, Vec<Node>, Symbols),
+    Map(Symbols, Vec<Node>, Vec::<Node>, Symbols),
+    Set(Symbols, Vec<Node>, Symbols),
+    KeyValue(Symbols, Symbols),
+    Element(Vec<Symbols>)
 }
 
 pub trait ExpressionParserMethods {
