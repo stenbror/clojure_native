@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 
 
 #[derive(Clone, PartialEq, Debug)]
@@ -9,6 +11,12 @@ pub enum Symbols {
     RightBracket(u32, u32),
     LeftCurly(u32, u32),
     RightCurly(u32, u32),
+
+    Def(u32, u32),
+    Defn(u32, u32),
+
+    LiteralName(u32, u32, Box<String>),
+    LiteralKeyword(u32, u32, Box<String>)
 }
 
 pub trait LexicalAnalyzerMethods {
@@ -17,6 +25,7 @@ pub trait LexicalAnalyzerMethods {
     fn advance(&mut self) -> ();
 
     fn is_operator_or_delimiter(&mut self) -> Option<Symbols>;
+    fn is_reserved_keywords(&self, text: &str, start: u32, end: u32) -> Option<Symbols>; 
 
     fn get_symbol(&mut self) -> Result<Symbols, Box<String>>;
 }
@@ -146,6 +155,22 @@ impl LexicalAnalyzerMethods for LexicalAnalyzer {
         }
     }
 
+    fn is_reserved_keywords(&self, text: &str, start: u32, end: u32) -> Option<Symbols> {
+        match text {
+            "def" => Some(Symbols::Def(start, end)),
+            "defn" => Some(Symbols::Defn(start, end)),
+            _ => {
+                match (&text.starts_with(':'), text.len() == (1 as usize)) {
+                    (true, true) => None,
+                    (true, false) => {
+                        Some(Symbols::LiteralKeyword(start, end, Box::new(text.to_owned())))
+                    },
+                    _ => Some(Symbols::LiteralName(start, end, Box::new(text.to_owned())))
+                }
+            }
+        }
+    }
+
     fn get_symbol(&mut self) -> Result<Symbols, Box<String>> {
 
         /* Remove whitespace, lineshift and comments */
@@ -197,10 +222,36 @@ impl LexicalAnalyzerMethods for LexicalAnalyzer {
             None => ()
         }
 
-        /* Check for reserved keywords */
+        /* Check for reserved keywords or literal names */
+        if self.get_char().is_alphabetic() || self.get_char() == '_' || self.get_char() == ':'  {
 
+            let mut buffer = std::string::String::new();
+            buffer.push(self.get_char());
+            self.advance();
 
-        Err(Box::new("".to_string()))
+            loop {
+                let _cur = self.get_char();
+                if _cur.is_alphanumeric() || _cur == '_' {
+                    buffer.push(_cur);
+                    self.advance();
+                    continue
+                }
+                break
+            }
+
+            let res = self.is_reserved_keywords(buffer.as_str(), start, self.index);
+
+            return match res {
+                Some(x) => {
+                    Ok(x) /* Found reserved keyword or literals */
+                },
+                _ => {
+                    Err(Box::new("Found ':' but there is no keyword".to_string()))
+                }
+            }
+        }
+
+        Err(Box::new("Illegal character found in text!".to_string()))
     }
 }
 
@@ -399,6 +450,41 @@ mod tests {
             },
             _ => assert!(false)
         };
+    }
+
+
+
+
+    #[test]
+    fn keyword_def() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("  def"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Def(2, 5) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn keyword_defn() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("defn"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Defn(0, 4) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
     }
 
 }
