@@ -10,7 +10,7 @@ pub enum Node {
     Map(Symbols, Vec<Node>, Vec::<Node>, Symbols),
     Set(Symbols, Vec<Node>, Symbols),
     KeyValue(Symbols, Symbols),
-    Element(Vec<Symbols>)
+    Element(Symbols)
 }
 
 pub trait ExpressionParserMethods {
