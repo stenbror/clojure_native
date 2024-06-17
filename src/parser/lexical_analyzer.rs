@@ -8,12 +8,22 @@ pub enum Symbols {
     RightBracket(u32, u32),
     LeftCurly(u32, u32),
     RightCurly(u32, u32),
+    Hash(u32, u32),
 
+    Apply(u32, u32),
     Def(u32, u32),
     Defn(u32, u32),
     Doc(u32, u32),
+    Fn(u32, u32),
+    First(u32, u32),
+    Get(u32, u32),
+    If(u32, u32),
     Let(u32, u32),
+    Map(u32, u32),
+    Name(u32, u32),
     Require(u32, u32),
+    Second(u32, u32),
+    When(u32, u32),
 
     LiteralName(u32, u32, Box<String>),
     LiteralKeyword(u32, u32, Box<String>)
@@ -151,17 +161,30 @@ impl LexicalAnalyzerMethods for LexicalAnalyzer {
                     }
                 }
             },
+            '#' => {
+                self.advance();
+                Some(Symbols::Hash(start, self.index))
+            },
             _ => None
         }
     }
 
     fn is_reserved_keywords(&self, text: &str, start: u32, end: u32) -> Option<Symbols> {
         match text {
+            "apply" => Some(Symbols::Apply(start, end)),
             "def" => Some(Symbols::Def(start, end)),
             "defn" => Some(Symbols::Defn(start, end)),
             "doc" => Some(Symbols::Doc(start, end)),
+            "fn" => Some(Symbols::Fn(start, end)),
+            "first" => Some(Symbols::First(start, end)),
+            "get" => Some(Symbols::Get(start, end)),
+            "if" => Some(Symbols::If(start, end)),
             "let" => Some(Symbols::Let(start, end)),
+            "map" => Some(Symbols::Map(start, end)),
+            "name" => Some(Symbols::Name(start, end)),
             "require" => Some(Symbols::Require(start, end)),
+            "second" => Some(Symbols::Second(start, end)),
+            "when" => Some(Symbols::When(start, end)),
             _ => {
                 match (&text.starts_with(':'), text.len() == (1 as usize)) {
                     (true, true) => None,
@@ -455,7 +478,39 @@ mod tests {
         };
     }
 
+    #[test]
+    fn operator_or_delimiter_hash() {
 
+        let mut lexer = Box::new(LexicalAnalyzer::new("  #"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Hash(2, 3) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+
+
+    #[test]
+    fn keyword_apply() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("apply"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Apply(0, 5) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
 
 
     #[test]
@@ -507,6 +562,70 @@ mod tests {
     }
 
     #[test]
+    fn keyword_fn() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("fn"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Fn(0, 2) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn keyword_first() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("first"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::First(0, 5) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn keyword_get() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("get"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Get(0, 3) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn keyword_if() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("if"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::If(0, 2) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
     fn keyword_let() {
 
         let mut lexer = Box::new(LexicalAnalyzer::new("let"));
@@ -523,6 +642,38 @@ mod tests {
     }
 
     #[test]
+    fn keyword_map() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("map"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Map(0, 3) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn keyword_name() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("name"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Name(0, 4) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
     fn keyword_require() {
 
         let mut lexer = Box::new(LexicalAnalyzer::new("require"));
@@ -531,6 +682,38 @@ mod tests {
             Ok(x) => {
                 match x {
                     Symbols::Require(0, 7) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn keyword_second() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("second"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Second(0, 6) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn keyword_when() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("when"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::When(0, 4) => assert!(true),
                     _ => assert!(false)
                 }
             },
