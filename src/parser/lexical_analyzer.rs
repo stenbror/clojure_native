@@ -9,6 +9,10 @@ pub enum Symbols {
     LeftCurly(u32, u32),
     RightCurly(u32, u32),
     Hash(u32, u32),
+    Plus(u32, u32),
+    Minus(u32, u32),
+    Mul(u32, u32),
+    Divide(u32, u32),
 
     Apply(u32, u32),
     Def(u32, u32),
@@ -165,6 +169,22 @@ impl LexicalAnalyzerMethods for LexicalAnalyzer {
                 self.advance();
                 Some(Symbols::Hash(start, self.index))
             },
+            '+' => {
+                self.advance();
+                Some(Symbols::Plus(start, self.index))
+            },
+            '-' => {
+                self.advance();
+                Some(Symbols::Minus(start, self.index))
+            },
+            '*' => {
+                self.advance();
+                Some(Symbols::Mul(start, self.index))
+            },
+            '/' => {
+                self.advance();
+                Some(Symbols::Divide(start, self.index))
+            },
             _ => None
         }
     }
@@ -281,10 +301,18 @@ impl LexicalAnalyzerMethods for LexicalAnalyzer {
     }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Unittests below
+///////////////////////////////////////////////////////////////////////////////
+
+
 #[cfg(test)]
 mod tests {
 
     use crate::parser::lexical_analyzer::{Symbols, LexicalAnalyzerMethods, LexicalAnalyzer};
+
+    // Tests for operators and delimiters /////////////////////////////////////
 
     #[test]
     fn operator_or_delimiter_list_start() {
@@ -494,7 +522,72 @@ mod tests {
         }
     }
 
+    #[test]
+    fn operator_or_delimiter_plus() {
 
+        let mut lexer = Box::new(LexicalAnalyzer::new("  +"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Plus(2, 3) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_minus() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("  -"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Minus(2, 3) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_mul() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("  *"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Mul(2, 3) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn operator_or_delimiter_div() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("  /"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Divide(2, 3) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+
+    // Tests reserved keywords ////////////////////////////////////////////////
 
     #[test]
     fn keyword_apply() {
@@ -723,6 +816,7 @@ mod tests {
 
 
 
+    // Testing whitespace like comments, newlines etc /////////////////////////
 
     #[test]
     fn single_semicolon_comment() {
