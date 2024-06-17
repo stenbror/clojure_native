@@ -1,6 +1,3 @@
-use std::str::FromStr;
-
-
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Symbols {
@@ -480,6 +477,57 @@ mod tests {
             Ok(x) => {
                 match x {
                     Symbols::Defn(0, 4) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+
+
+
+    #[test]
+    fn single_semicolon_comment() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("; This is a comment with single semicolon start!"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::EOF => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn double_semicolon_comment() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new(";; This is a comment with double semicolon start!"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::EOF => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn multi_semicolon_comment() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new(";;;;;;;;; This is a comment with multiple semicolon start!"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::EOF => assert!(true),
                     _ => assert!(false)
                 }
             },
