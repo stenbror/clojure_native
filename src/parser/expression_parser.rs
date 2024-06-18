@@ -1,7 +1,5 @@
 use super::lexical_analyzer::{ LexicalAnalyzer, LexicalAnalyzerMethods, Symbols };
 
-
-
 #[derive(Clone, PartialEq, Debug)]
 pub enum Node {
     Unit(Vec<Node>),
@@ -21,8 +19,6 @@ pub trait ExpressionParserMethods {
     fn parse_list(&mut self) -> Result<Node, Box<String>>;
     fn parse_vector(&mut self) -> Result<Node, Box<String>>;
     fn parse_map(&mut self) -> Result<Node, Box<String>>;
-
-
 }
 
 pub struct ExpressionParser {
