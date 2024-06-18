@@ -18,6 +18,7 @@ pub enum Symbols {
     Apply(u32, u32),
     Def(u32, u32),
     Defn(u32, u32),
+    Defrecord(u32, u32),
     Doc(u32, u32),
     Fn(u32, u32),
     First(u32, u32),
@@ -215,6 +216,7 @@ impl LexicalAnalyzerMethods for LexicalAnalyzer {
             "apply" => Some(Symbols::Apply(start, end)),
             "def" => Some(Symbols::Def(start, end)),
             "defn" => Some(Symbols::Defn(start, end)),
+            "defrecord" => Some(Symbols::Defrecord(start, end)),
             "doc" => Some(Symbols::Doc(start, end)),
             "fn" => Some(Symbols::Fn(start, end)),
             "first" => Some(Symbols::First(start, end)),
@@ -725,6 +727,22 @@ mod tests {
             Ok(x) => {
                 match x {
                     Symbols::Defn(0, 4) => assert!(true),
+                    _ => assert!(false)
+                }
+            },
+            _ => assert!(false)
+        }
+    }
+
+    #[test]
+    fn keyword_defrecord() {
+
+        let mut lexer = Box::new(LexicalAnalyzer::new("defrecord"));
+
+        match lexer.get_symbol() { 
+            Ok(x) => {
+                match x {
+                    Symbols::Defrecord(0, 9) => assert!(true),
                     _ => assert!(false)
                 }
             },
